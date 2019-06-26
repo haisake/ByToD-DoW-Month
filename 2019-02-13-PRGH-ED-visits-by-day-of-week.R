@@ -18,6 +18,7 @@ library(tidyverse)
 library(DT)
 library(ggbeeswarm)
 library(broom)
+library(lubridate)
 
 # 1) read data -------------
 
@@ -36,7 +37,10 @@ df2.ed_visits_clean <-
                                      "Thursday", 
                                      "Friday",
                                      "Saturday", 
-                                     "Sunday")))
+                                     "Sunday")), 
+         lag_ed_visits = lag(ed_visits), 
+         date = dmy(StartDate), 
+         year = year(date) %>% as.factor())
 
 # str(df2.ed_visits_clean)
 
@@ -45,6 +49,21 @@ df2.ed_visits_clean %>% datatable()
 
 
 # 2) plots --------
+
+df2.ed_visits_clean %>% 
+  ggplot(aes(x = date, 
+             y = ed_visits)) + 
+  geom_line() + 
+  geom_smooth() + 
+  
+  labs(title = "PRGH ED visits") + 
+  
+  theme_light() +
+  theme(panel.grid.minor = element_line(colour = "grey95"), 
+      panel.grid.major = element_line(colour = "grey95"))
+      
+
+
 df2.ed_visits_clean %>% 
   pull(ed_visits) %>% 
   hist
@@ -110,7 +129,7 @@ df2.ed_visits_clean %>%
 
 
 
-m1.mh_ed_visits <- lm(ed_visits_known_to_PARIS_MH ~ weekday, 
+m1.mh_ed_visits <- lm(ed_visits_known_to_PARIS_MH ~ weekday + year, 
                       data = df2.ed_visits_clean)
 
 summary(m1.mh_ed_visits)
@@ -134,7 +153,7 @@ df3.mh_coeffs <-
 #'  
 
 
-m2.all_ed_visits <- lm(ed_visits ~ weekday, 
+m2.all_ed_visits <- lm(ed_visits ~ weekday + year + lag_ed_visits, 
                        data = df2.ed_visits_clean)
 
 summary(m2.all_ed_visits)
@@ -149,6 +168,15 @@ df4.coeffs <-
   mutate(lower = estimate - 1.96 * std.error, 
          upper = estimate + 1.96 * std.error)
 
+df4.coeffs %>% 
+  select(term, 
+         lower, 
+         estimate, 
+         upper, 
+         everything()) %>% 
+  datatable() %>% 
+  formatRound(2:7, 2)
+
 
 #'
 #' ## Notes
@@ -159,7 +187,7 @@ df4.coeffs <-
 
 
 
-# 4) visualize effects: 
+# 4) visualize effects: ----- 
 
 df4.coeffs %>% 
   filter(grepl("weekday", term)) %>% 
@@ -187,7 +215,7 @@ df4.coeffs %>%
   labs(x = "Day of week", 
        y = "Difference in average daily ED visits" ,
        title = "PRGH ED \nImpact of Day of Week on average daily ED visits", 
-       subtitle = "\nBaseline - Monday") + 
+       subtitle = "These estimates control for year and previous day's ED visits \n\nBaseline - Monday") + 
   
   
   theme_light() +
