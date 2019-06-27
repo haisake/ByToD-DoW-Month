@@ -79,24 +79,19 @@ df2.ed_visits_clean %>%
 #'
 
 df2.ed_visits_clean %>% 
+  filter(year == "2018") %>% 
   ggplot(aes(x = weekday, 
              y = ed_visits)) + 
   
   geom_boxplot() + 
+  geom_beeswarm() + 
   theme_light() +
+  labs(title = "2018") + 
   theme(panel.grid.minor = element_line(colour = "grey95"), 
         panel.grid.major = element_line(colour = "grey95"))
 
 
-df2.ed_visits_clean %>% 
-  ggplot(aes(x = weekday, 
-             y = ed_visits)) + 
-  
-  geom_beeswarm() + 
-  theme_light() +
-  theme(panel.grid.minor = element_line(colour = "grey95"), 
-      panel.grid.major = element_line(colour = "grey95"))
-      
+
 
 
 
@@ -105,30 +100,21 @@ df2.ed_visits_clean %>%
 #'
 
 df2.ed_visits_clean %>% 
+  filter(year == "2018") %>% 
   ggplot(aes(x = weekday, 
              y = ed_visits_known_to_PARIS_MH)) + 
   
   geom_boxplot() + 
+  geom_beeswarm() +
+  labs(title = "2018") + 
   theme_light() +
   theme(panel.grid.minor = element_line(colour = "grey95"), 
         panel.grid.major = element_line(colour = "grey95"))
 
-
-df2.ed_visits_clean %>% 
-  ggplot(aes(x = weekday, 
-             y = ed_visits_known_to_PARIS_MH)) + 
-  
-  geom_beeswarm() + 
-  theme_light() +
-  theme(panel.grid.minor = element_line(colour = "grey95"), 
-        panel.grid.major = element_line(colour = "grey95"))
 
 
 
 # 3) regression ------------
-
-
-
 m1.mh_ed_visits <- lm(ed_visits_known_to_PARIS_MH ~ weekday + year, 
                       data = df2.ed_visits_clean)
 
